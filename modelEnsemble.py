@@ -38,15 +38,15 @@ class modelEnsemble:
         vcReport = [vcHardMetric, vcSoftMetric]
 
         votingReport = pd.DataFrame(vcReport, columns=[
-                                    "Accuracy", "Precision", "F1-Measure"], index=['Voting-Hard', 'Voting-Soft'])
+                                    "Accuracy", "Precision", "Recall", "F1-Measure"], index=['Voting-Hard', 'Voting-Soft'])
         return votingReport
 
     def make_report(self, y_pred):
         accuracy = accuracy_score(self.y_test, y_pred)
         precision = precision_score(self.y_test, y_pred, average="macro")
-        # recall = recall_score(self.y_test, y_pred, average="macro")
+        recall = recall_score(self.y_test, y_pred, average="macro")
         f1 = f1_score(self.y_test, y_pred, average="macro")
-        metrics = [accuracy, precision, f1]
+        metrics = [accuracy, precision, recall, f1]
         return metrics
 
     def stacking(self, finalmodel):
@@ -54,51 +54,53 @@ class modelEnsemble:
                                 final_estimator=finalmodel)
         sc = sc.fit(self.x_train, self.y_train)
         sc_pred = sc.predict(self.x_test)
-        scMetric = self.make_report(sc_pred)
+        sc_prob = sc.predict_proba(self.x_test)
+        scMetric = self.make_report(sc_pred, sc_prob)
         self.sc = sc
 
-        return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "F1-Measure"])
-    
+        return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"])
+
     def predict(self, x):
         return self.sc.predict(x)
-        
-        
+
 
 class modelReport:
     def __init__(self, y_test):
         self.y_test = y_test
         self.metrics = []
         self.names = []
-    
+
     def addmodel(self, y_prob, name, y_pred):
         accuracy = accuracy_score(self.y_test, y_pred)
-        precision = precision_score(self.y_test, y_pred, average = "macro")
-        recall = recall_score(self.y_test, y_pred, average = "macro")
-        f1 = f1_score(self.y_test, y_pred, average = "macro")
-        auc = roc_auc_score(self.y_test, y_prob, multi_class = "ovo")
+        precision = precision_score(self.y_test, y_pred, average="macro")
+        recall = recall_score(self.y_test, y_pred, average="macro")
+        f1 = f1_score(self.y_test, y_pred, average="macro")
+        auc = roc_auc_score(self.y_test, y_prob, multi_class="ovo")
         metric = [accuracy, precision, recall, f1, auc]
         self.metrics.append(metric)
         self.names.append(name)
 
     def makeReport(self):
-        metrics_summary = pd.DataFrame(self.metrics, columns = ["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"], index = self.names)
+        metrics_summary = pd.DataFrame(self.metrics, columns=[
+                                       "Accuracy", "Precision", "Recall", "F1-Measure", "AUC"], index=self.names)
         return metrics_summary
+
 
 class OnehotReportGenerator:
     def __init__(self, traindf, testdf):
         train_data = pd.read_csv(traindf)
-        self.X_train = train_data.drop(["category"], axis =  "columns")
+        self.X_train = train_data.drop(["category"], axis="columns")
         y_train = train_data[['category']]
 
         test_data = pd.read_csv(testdf)
-        self.X_test = test_data.drop(["category"], axis =  "columns")
+        self.X_test = test_data.drop(["category"], axis="columns")
         y_test = test_data[['category']]
 
         self.label_encoder = LabelEncoder()
         self.y_train_encoded = self.label_encoder.fit_transform(y_train)
         self.y_test_encoded = self.label_encoder.transform(y_test)
         self.report = modelReport(self.y_test_encoded)
-    
+
     def runBasicModels(self, models):
         for name, model in models:
             model.fit(self.X_train, self.y_train_encoded)
@@ -106,7 +108,8 @@ class OnehotReportGenerator:
             pred_prob = model.predict_proba(self.X_test)
             self.report.addmodel(pred_prob, name, pred)
             print("name: " + name)
-            print(classification_report(self.y_test_encoded, pred, target_names = self.label_encoder.classes_))
-    
+            print(classification_report(self.y_test_encoded,
+                  pred, target_names=self.label_encoder.classes_))
+
     def makeReport(self):
         return self.report.makeReport()
