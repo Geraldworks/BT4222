@@ -1,6 +1,6 @@
 from sklearn.ensemble import VotingClassifier
 from sklearn.ensemble import StackingClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, roc_auc_score, classification_report, precision_score, recall_score, f1_score
 import pandas as pd
 
 
@@ -44,3 +44,23 @@ class modelEnsemble:
         scMetric = self.make_report(sc_pred)
 
         return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "F1-Measure"])
+
+class modelReport:
+    def __init__(self, y_test):
+        self.y_test = y_test
+        self.metrics = []
+        self.names = []
+    
+    def addmodel(self, y_prob, name):
+        accuracy = accuracy_score(self.y_test, y_prob)
+        precision = precision_score(self.y_test, y_prob, average = "macro")
+        recall = recall_score(self.y_test, y_prob, average = "macro")
+        f1 = f1_score(self.y_test, y_prob, average = "macro")
+        auc = roc_auc_score(self.y_test, y_prob, multi_class = "ovo")
+        metric = [accuracy, precision, recall, f1, auc]
+        self.metrics.append(metric)
+        self.names.append(name)
+
+    def makeReport(self):
+        metrics_summary = pd.DataFrame(self.metrics, columns = ["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"], index = self.names)
+        return metrics_summary
