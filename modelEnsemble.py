@@ -23,6 +23,7 @@ class modelEnsemble:
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
+        self.sc = None
 
     def voting(self):
         vcHard = VotingClassifier(estimators=self.models, voting='hard')
@@ -54,8 +55,14 @@ class modelEnsemble:
         sc = sc.fit(self.x_train, self.y_train)
         sc_pred = sc.predict(self.x_test)
         scMetric = self.make_report(sc_pred)
+        self.sc = sc
 
         return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "F1-Measure"])
+    
+    def predict(self, x):
+        return self.sc.predict(x)
+        
+        
 
 class modelReport:
     def __init__(self, y_test):
