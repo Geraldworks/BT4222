@@ -51,11 +51,11 @@ class modelReport:
         self.metrics = []
         self.names = []
     
-    def addmodel(self, y_prob, name):
-        accuracy = accuracy_score(self.y_test, y_prob)
-        precision = precision_score(self.y_test, y_prob, average = "macro")
-        recall = recall_score(self.y_test, y_prob, average = "macro")
-        f1 = f1_score(self.y_test, y_prob, average = "macro")
+    def addmodel(self, y_prob, name, y_pred):
+        accuracy = accuracy_score(self.y_test, y_pred)
+        precision = precision_score(self.y_test, y_pred, average = "macro")
+        recall = recall_score(self.y_test, y_pred, average = "macro")
+        f1 = f1_score(self.y_test, y_pred, average = "macro")
         auc = roc_auc_score(self.y_test, y_prob, multi_class = "ovo")
         metric = [accuracy, precision, recall, f1, auc]
         self.metrics.append(metric)
