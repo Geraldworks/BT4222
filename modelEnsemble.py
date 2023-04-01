@@ -1,7 +1,19 @@
+import pandas as pd
+
+from sklearn.preprocessing import LabelEncoder
+
+# for the models
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+import xgboost as xgb
 from sklearn.ensemble import VotingClassifier
 from sklearn.ensemble import StackingClassifier
+
+# for evaluation metrics of the models
 from sklearn.metrics import accuracy_score, roc_auc_score, classification_report, precision_score, recall_score, f1_score
-import pandas as pd
 
 
 class modelEnsemble:
@@ -64,3 +76,30 @@ class modelReport:
     def makeReport(self):
         metrics_summary = pd.DataFrame(self.metrics, columns = ["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"], index = self.names)
         return metrics_summary
+
+class OnehotReportGenerator:
+    def __init__(self, traindf, testdf):
+        train_data = pd.read_csv(traindf)
+        self.X_train = train_data.drop(["category"], axis =  "columns")
+        y_train = train_data[['category']]
+
+        test_data = pd.read_csv(testdf)
+        self.X_test = test_data.drop(["category"], axis =  "columns")
+        y_test = test_data[['category']]
+
+        self.label_encoder = LabelEncoder()
+        self.y_train_encoded = self.label_encoder.fit_transform(y_train)
+        self.y_test_encoded = self.label_encoder.transform(y_test)
+        self.report = modelReport(self.y_test_encoded)
+    
+    def runBasicModels(self, models):
+        for name, model in models:
+            model.fit(self.X_train, self.y_train_encoded)
+            pred = model.predict(self.X_test)
+            pred_prob = model.predict_proba(self.X_test)
+            self.report.addmodel(pred_prob, name, pred)
+            print("name: " + name)
+            print(classification_report(self.y_test_encoded, pred, target_names = self.label_encoder.classes_))
+    
+    def makeReport(self):
+        return self.report.makeReport()
