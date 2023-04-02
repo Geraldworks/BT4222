@@ -54,11 +54,13 @@ class modelEnsemble:
                                 final_estimator=finalmodel)
         sc = sc.fit(self.x_train, self.y_train)
         sc_pred = sc.predict(self.x_test)
-        sc_prob = sc.predict_proba(self.x_test)
-        scMetric = self.make_report(sc_pred, sc_prob)
+        # sc_prob = sc.predict_proba(self.x_test)
+        # scMetric = self.make_report(sc_pred, sc_prob)
+        scMetric = self.make_report(sc_pred)
         self.sc = sc
 
-        return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"])
+        return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "Recall", "F1-Measure"])
+        # return pd.DataFrame(scMetric, columns=['Stacking'], index=["Accuracy", "Precision", "Recall", "F1-Measure", "AUC"])
 
     def predict(self, x):
         return self.sc.predict(x)
