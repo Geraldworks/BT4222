@@ -1,14 +1,19 @@
 from bs4 import BeautifulSoup
 import nltk
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
-import pandas as pd
 from collections import Counter
 from itertools import compress
 
 def get_text(html_text):
     soup = BeautifulSoup(html_text, features="html.parser")
-    return soup.get_text()
+    txt = soup.get_text()
+    txt = txt.split()
+    stop_words = stopwords.words('english')
+    txt = [x for x in txt if x not in stop_words]
+    txt = " ".join(txt)
+    return txt
 
 def get_tokenized_text(txt):
     return nltk.word_tokenize(txt)
