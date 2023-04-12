@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 # Function to plot a bar graph of the frequency of a specific column
 def plot_column_frequency(data, column_name, title='Frequency Bar Graph', xlabel='Categories', ylabel='Frequency'):
@@ -11,4 +12,10 @@ def plot_column_frequency(data, column_name, title='Frequency Bar Graph', xlabel
     plt.title(title, fontsize=18)
     plt.xlabel(xlabel, fontsize=15)
     plt.ylabel(ylabel, fontsize=15)
+    plt.show()
+
+def plot_corr_heatmap(data):
+    corr_matrix = data.apply(pd.to_numeric).corr().fillna(0)
+    plt.figure(figsize=(12, 10))
+    sns.heatmap(corr_matrix, cmap='coolwarm', vmin=-1, vmax=1)
     plt.show()
