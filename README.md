@@ -14,4 +14,5 @@ We then utilised various machine learning algorithms including:
 2. Random Forest Classifiers
 3. LSTM
 4. Ensemble methods
+
 To accurately predict the job category of a resume
