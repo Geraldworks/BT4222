@@ -18,8 +18,8 @@ We then utilised various machine learning algorithms including:
 To accurately predict the job category of a resume.
 
 Done By:
-Gerald Ho Shao Xian
-Li Bai Shi
-Lim Sze Ying
-Korey Dai Yang
-Wang Jia Yi
+- Gerald Ho Shao Xian
+- Li Bai Shi
+- Lim Sze Ying
+- Korey Dai Yang
+- Wang Jia Yi
